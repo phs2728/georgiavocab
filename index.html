@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>조지아어 단어장</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { overflow-x: hidden; }
+
+  body {
+    font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+    background: #111318;
+    color: #e8e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 40px;
+  }
+
+  /* ── 헤더 ── */
+  .header {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+
+  /* 햄버거 + 챕터명 */
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: relative;
+  }
+
+  .hamburger-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #2a2d3a;
+    background: #1c1f2b;
+    color: #aaa;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background .18s, color .18s;
+  }
+  .hamburger-btn:hover { background: #252839; color: #eee; }
+  .hamburger-btn.open { background: #252839; color: #fff; border-color: #3a3d50; }
+
+  .chapter-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e8e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+
+  /* 챕터 드롭다운 */
+  .chapter-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: #1c1f2b;
+    border: 1px solid #2a2d3a;
+    border-radius: 14px;
+    padding: 6px;
+    min-width: 220px;
+    z-index: 100;
+    box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  }
+  .chapter-dropdown.open { display: block; }
+
+  .chapter-option {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    color: #888;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .chapter-option:hover { background: #252839; color: #e8e8f0; }
+  .chapter-option.active { color: #fff; font-weight: 600; background: #252839; }
+
+  /* 아이콘 버튼 그룹 */
+  .icon-btns {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid #2a2d3a;
+    background: #1c1f2b;
+    color: #aaa;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .18s, color .18s, border-color .18s;
+  }
+  .icon-btn:hover { background: #252839; color: #eee; border-color: #3a3d50; }
+  .icon-btn.female-active { background: #2a1f3a; color: #c084f0; border-color: #7d3c98; font-size: 1.1rem; font-weight: 700; }
+  .icon-btn.male-active   { background: #1a2a3a; color: #60a8f0; border-color: #1f6ab0; font-size: 1.1rem; font-weight: 700; }
+
+  /* ── 카테고리 필터 ── */
+  .cat-filter-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 20px;
+  }
+  .cat-filter-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 48px; height: 100%;
+    background: linear-gradient(to right, transparent, #111318);
+    pointer-events: none;
+    border-radius: 0 20px 20px 0;
+  }
+  .category-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .category-filters::-webkit-scrollbar { display: none; }
+
+  .cat-btn {
+    font-size: 0.75rem;
+    padding: 5px 13px;
+    border-radius: 20px;
+    background: transparent;
+    border: 1px solid #2a2d3a;
+    color: #888;
+    cursor: pointer;
+    transition: all .18s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .cat-btn:hover { border-color: #444; color: #ccc; }
+  .cat-btn.active {
+    background: #f0c040;
+    color: #111318;
+    border-color: #f0c040;
+    font-weight: 600;
+  }
+
+  /* ── 진행바 ── */
+  .progress-wrap {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 4px;
+  }
+  .progress-bar {
+    width: 100%;
+    background: #1c1f2b;
+    border-radius: 20px;
+    height: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #a259f7, #f0c040);
+    border-radius: 20px;
+    transition: width .4s ease;
+  }
+  .progress-label {
+    font-size: 0.72rem;
+    color: #7a7f9a;
+    text-align: right;
+    margin-top: 5px;
+    margin-bottom: 16px;
+  }
+
+  /* ── 플래시카드 ── */
+  .card-scene {
+    width: 100%;
+    max-width: 480px;
+    height: 260px;
+    perspective: 1000px;
+    margin-bottom: 20px;
+    cursor: pointer;
+  }
+
+  .card {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.4,.2,.2,1);
+  }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .card-front {
+    background: #1c1f2b;
+    border: 1px solid #2a2d3a;
+  }
+
+  .card-back {
+    background: #1e1628;
+    border: 1px solid #3d2060;
+    transform: rotateY(180deg);
+  }
+
+  .card-category {
+    font-size: 0.68rem;
+    color: #7a7f9a;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .card-geo {
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .card-hint {
+    font-size: 0.73rem;
+    color: #5a5f75;
+    margin-top: 14px;
+  }
+
+  .card-ko {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f0c040;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+
+  .card-geo-small {
+    font-size: 1rem;
+    color: #7a7f9a;
+    text-align: center;
+  }
+
+  /* ── 네비게이션 ── */
+  .nav-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .nav-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #1c1f2b;
+    border: 1px solid #2a2d3a;
+    color: #aaa;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .nav-btn:hover { background: #252839; color: #fff; }
+
+  .flip-btn {
+    padding: 0 32px;
+    height: 46px;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #a259f7;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: background .18s;
+    letter-spacing: 0.3px;
+  }
+  .flip-btn:hover { background: #8b40e0; }
+
+  .tts-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: #1a2f1e;
+    border: 1px solid #2a4a30;
+    color: #4caf50;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .tts-btn:hover { background: #1e3a22; color: #66bb6a; }
+  .tts-btn.playing { background: #1e3a22; color: #66bb6a; border-color: #4caf50; }
+
+  /* ── 상태 ── */
+  .status-row {
+    display: flex;
+    gap: 20px;
+    font-size: 0.78rem;
+    color: #7a7f9a;
+  }
+  .status-row .val { color: #c0c4d8; font-weight: 600; }
+
+  .external-link-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .study-link-btn {
+    display: inline-block;
+    padding: 10px 28px;
+    background: #3a3f5c;
+    color: #c0c4d8;
+    border: 1px solid #4a5070;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .study-link-btn:hover {
+    background: #4a5070;
+    color: #fff;
+    border-color: #6a70a0;
+  }
+  .donate-btn {
+    display: inline-block;
+    padding: 10px 28px;
+    background: #1a5276;
+    color: #a9cce3;
+    border: 1px solid #2e86c1;
+    border-radius: 24px;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+  }
+  .donate-btn:hover {
+    background: #2e86c1;
+    color: #fff;
+    border-color: #5dade2;
+  }
+
+  .tts-status {
+    font-size: 0.72rem;
+    color: #7a7f9a;
+    text-align: center;
+    height: 14px;
+    margin-bottom: 8px;
+  }
+
+  /* ── 모드 토글 ── */
+  .mode-toggle {
+    display: flex;
+    width: 100%;
+    max-width: 480px;
+    background: #1c1f2b;
+    border: 1px solid #2a2d3a;
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 20px;
+  }
+  .mode-btn {
+    flex: 1;
+    height: 34px;
+    border: none;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: #666;
+    transition: all .2s;
+  }
+  .mode-btn.active {
+    background: #252839;
+    color: #e8e8f0;
+    font-weight: 600;
+  }
+
+  /* ── 라이트너 박스 패널 ── */
+  .leitner-panel {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .leitner-panel.visible { display: block; }
+
+  .leitner-boxes {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .lbox {
+    flex: 1;
+    background: #1c1f2b;
+    border: 1px solid #2a2d3a;
+    border-radius: 10px;
+    padding: 8px 4px;
+    text-align: center;
+    transition: border-color .2s, background .2s;
+  }
+  .lbox.current {
+    border-color: #a259f7;
+    background: #1e1628;
+  }
+  .lbox.done {
+    border-color: #2a4a30;
+    background: #141e16;
+  }
+  .lbox-num {
+    font-size: 0.65rem;
+    color: #555;
+    margin-bottom: 3px;
+  }
+  .lbox-count {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #c0c4d8;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .lbox.current .lbox-count { color: #a259f7; }
+  .lbox.done .lbox-count { color: #4caf50; }
+  .lbox-interval {
+    font-size: 0.6rem;
+    color: #444;
+  }
+
+  .leitner-today {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #7a7f9a;
+    padding: 0 2px;
+  }
+  .leitner-today .due-count {
+    color: #f0c040;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .reset-leitner-btn {
+    font-size: 0.7rem;
+    color: #444;
+    background: none;
+    border: 1px solid #2a2d3a;
+    border-radius: 6px;
+    padding: 3px 8px;
+    cursor: pointer;
+  }
+  .reset-leitner-btn:hover { color: #888; border-color: #444; }
+
+  /* ── 정답/오답 버튼 ── */
+  .answer-btns {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .answer-btns.visible { display: flex; }
+
+  .answer-symbol-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+  }
+  .wrong-btn, .correct-btn {
+    flex: 1;
+    height: 72px;
+    border-radius: 16px;
+    font-size: 1.6rem;
+    font-weight: 300;
+    cursor: pointer;
+    border: none;
+    transition: all .18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wrong-btn {
+    background: #2a1515;
+    color: #e06060;
+    border: 1px solid #4a2020;
+  }
+  .wrong-btn:hover { background: #3a1a1a; color: #f07070; }
+  .correct-btn {
+    background: #152a18;
+    color: #60c070;
+    border: 1px solid #205030;
+  }
+  .correct-btn:hover { background: #1a3a20; color: #70d080; }
+
+  /* 라이트너 TTS 버튼 */
+  .leitner-tts-btn {
+    font-size: 1.6rem;
+    color: #4caf50;
+    background: #161b22;
+    border: 1.5px solid #2a4a30;
+    border-radius: 18px;
+    width: 72px;
+    height: 72px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .leitner-tts-btn:hover { color: #4caf50; border-color: #4caf50; }
+
+  /* 라이트너 모드일 때 nav 버튼 숨김 */
+  .nav-buttons.leitner-mode { display: none; }
+
+  /* 완료 메시지 */
+  .leitner-done {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 480px;
+    height: 260px;
+    background: #1c1f2b;
+    border: 1px solid #2a2d3a;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    color: #7a7f9a;
+    font-size: 0.9rem;
+  }
+  .leitner-done .done-icon { font-size: 2.5rem; }
+  .leitner-done .done-msg { color: #c0c4d8; font-weight: 600; }
+
+  /* ── 듣기 모드 진입 버튼 ── */
+  .listen-start-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .listen-start-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 24px;
+    border: 1px solid #2a2d3a;
+    background: #1c1f2b;
+    color: #888;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all .18s;
+    white-space: nowrap;
+  }
+  .listen-start-btn:hover { border-color: #4caf50; color: #4caf50; background: #161e18; }
+
+  /* ── 듣기 모드 오버레이 ── */
+  .listen-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0d0f14;
+    z-index: 300;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 32px;
+  }
+  .listen-overlay.active { display: flex; }
+
+  .listen-progress {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 1px;
+    margin-bottom: 32px;
+  }
+
+  .listen-word {
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 16px;
+    min-height: 80px;
+  }
+
+  .listen-phase {
+    font-size: 0.72rem;
+    color: #333;
+    letter-spacing: 0.5px;
+    height: 20px;
+    margin-bottom: 64px;
+  }
+
+  .listen-ctrl {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .listen-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    font-size: 1.6rem;
+    border: 1px solid #2a2d3a;
+    background: #1c1f2b;
+    color: #aaa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .18s;
+  }
+  .listen-btn:hover { background: #252839; color: #eee; }
+  .listen-btn.primary {
+    background: #1a2f1e;
+    border-color: #2a4a30;
+    color: #4caf50;
+  }
+  .listen-btn.primary:hover { background: #1e3a22; color: #66bb6a; }
+  .listen-btn.stop {
+    background: #2a1515;
+    border-color: #4a2020;
+    color: #e06060;
+  }
+  .listen-btn.stop:hover { background: #3a1a1a; color: #f07070; }
+
+  .listen-mode-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+  .listen-mode-btn {
+    padding: 7px 16px;
+    border-radius: 20px;
+    border: 1px solid #2a2d3a;
+    background: transparent;
+    color: #555;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .listen-mode-btn.active {
+    border-color: #4caf50;
+    color: #4caf50;
+    background: #161e18;
+  }
+
+  .listen-speed-wrap {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 260px;
+  }
+  .listen-speed-label {
+    font-size: 0.72rem;
+    color: #444;
+    letter-spacing: 0.5px;
+  }
+  .listen-speed-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #a259f7 var(--pct, 50%), #2a2d3a var(--pct, 50%));
+    outline: none;
+    cursor: pointer;
+  }
+  .listen-speed-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #a259f7;
+    box-shadow: 0 0 6px rgba(162,89,247,0.5);
+    cursor: pointer;
+  }
+  .listen-speed-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #a259f7;
+    border: none;
+    box-shadow: 0 0 6px rgba(162,89,247,0.5);
+    cursor: pointer;
+  }
+
+  /* ── 반응형: 데스크탑 ── */
+  @media (min-width: 520px) {
+    body {
+      padding: 40px 32px 60px;
+    }
+
+    .header,
+    .mode-toggle,
+    .leitner-panel,
+    .progress-wrap,
+    .card-scene,
+    .nav-buttons,
+    .answer-btns,
+    .leitner-done {
+      max-width: 720px;
+    }
+
+    .cat-filter-wrap {
+      max-width: 720px;
+    }
+
+    .header {
+      margin-bottom: 36px;
+    }
+    .chapter-name { font-size: 1.05rem; max-width: 260px; }
+    .chapter-dropdown { min-width: 280px; }
+    .hamburger-btn { width: 42px; height: 42px; font-size: 1.3rem; }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 1.2rem;
+    }
+
+    .cat-btn {
+      font-size: 0.85rem;
+      padding: 7px 18px;
+    }
+
+    .card-scene {
+      height: 380px;
+      margin-bottom: 28px;
+    }
+
+    .card-face { padding: 40px; }
+
+    .card-geo { font-size: 3.8rem; }
+    .card-ko  { font-size: 2.4rem; }
+    .card-geo-small { font-size: 1.2rem; }
+    .card-hint { font-size: 0.85rem; margin-top: 18px; }
+
+    .mode-btn { height: 42px; font-size: 0.95rem; }
+
+    .lbox { padding: 12px 6px; border-radius: 14px; }
+    .lbox-num { font-size: 0.72rem; }
+    .lbox-count { font-size: 1.4rem; margin-bottom: 4px; }
+    .lbox-interval { font-size: 0.68rem; }
+
+    .nav-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      font-size: 1.4rem;
+    }
+
+    .tts-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      font-size: 2rem;
+    }
+
+    .nav-buttons { gap: 16px; margin-bottom: 32px; }
+
+    .wrong-btn, .correct-btn {
+      height: 96px;
+      font-size: 2.2rem;
+      border-radius: 20px;
+    }
+
+    .leitner-tts-btn {
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      font-size: 2rem;
+    }
+
+    .answer-symbol-row { gap: 20px; }
+    .answer-btns { gap: 16px; margin-bottom: 32px; }
+
+    .leitner-done { height: 380px; }
+    .leitner-done .done-icon { font-size: 3.5rem; }
+    .leitner-done .done-msg { font-size: 1.1rem; }
+
+    .status-row { font-size: 0.9rem; gap: 28px; }
+
+    .progress-label { font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="header">
+  <div class="header-left">
+    <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleChapterMenu()">≡</button>
+    <span class="chapter-name" id="chapterName">챕터 1 — 기초 단어</span>
+    <div class="chapter-dropdown" id="chapterDropdown"></div>
+  </div>
+  <div class="icon-btns">
+    <button class="icon-btn female-active" id="btnGender" onclick="toggleVoice()" title="여성 음성 (클릭하면 남성으로)">♀</button>
+    <button class="icon-btn" onclick="shuffleCards()" title="카드 섞기">⇄</button>
+    <button class="icon-btn" onclick="resetDeck()" title="처음부터">↩</button>
+  </div>
+</div>
+
+<!-- 모드 토글 -->
+<div class="mode-toggle">
+  <button class="mode-btn active" id="modeFree" onclick="setMode('free')">자유 학습</button>
+  <button class="mode-btn" id="modeLeitner" onclick="setMode('leitner')">라이트너 학습</button>
+</div>
+
+<!-- 라이트너 패널 -->
+<div class="leitner-panel" id="leitnerPanel">
+  <div class="leitner-boxes">
+    <div class="lbox" id="lbox1"><div class="lbox-num">박스 1</div><div class="lbox-count" id="lbc1">0</div><div class="lbox-interval">매일</div></div>
+    <div class="lbox" id="lbox2"><div class="lbox-num">박스 2</div><div class="lbox-count" id="lbc2">0</div><div class="lbox-interval">2일</div></div>
+    <div class="lbox" id="lbox3"><div class="lbox-num">박스 3</div><div class="lbox-count" id="lbc3">0</div><div class="lbox-interval">4일</div></div>
+    <div class="lbox" id="lbox4"><div class="lbox-num">박스 4</div><div class="lbox-count" id="lbc4">0</div><div class="lbox-interval">7일</div></div>
+    <div class="lbox" id="lbox5"><div class="lbox-num">박스 5</div><div class="lbox-count" id="lbc5">0</div><div class="lbox-interval">14일</div></div>
+  </div>
+  <div class="leitner-today">
+    <span>오늘 복습할 카드 <span class="due-count" id="dueCount">0</span>장</span>
+    <button class="reset-leitner-btn" onclick="resetLeitner()">초기화</button>
+  </div>
+</div>
+
+<!-- 카테고리 필터 -->
+<div class="cat-filter-wrap">
+  <div class="category-filters" id="catFilters"></div>
+</div>
+
+<!-- 진행바 -->
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel"></div>
+</div>
+
+<!-- 플래시카드 -->
+<div class="card-scene" onclick="flipCard()">
+  <div class="card" id="card">
+    <div class="card-face card-front">
+      <div class="card-geo" id="frontGeo"></div>
+      <div class="card-hint">탭하면 뜻이 보여요</div>
+    </div>
+    <div class="card-face card-back">
+      <div class="card-category" id="backCat"></div>
+      <div class="card-ko" id="backKo"></div>
+      <div class="card-geo-small" id="backGeo"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 완료 메시지 (라이트너 모드 전용) -->
+<div class="leitner-done" id="leitnerDone">
+  <div class="done-icon">✓</div>
+  <div class="done-msg">오늘 복습 완료!</div>
+  <div style="font-size:0.8rem;color:#555;text-align:center;">내일 다시 복습할 카드가 생겨요</div>
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav-buttons" id="navButtons">
+  <button class="nav-btn" onclick="prevCard()">←</button>
+  <button class="tts-btn" id="ttsBtn" onclick="speak()" title="발음 듣기">🔊</button>
+  <button class="nav-btn" onclick="nextCard()">→</button>
+</div>
+
+<!-- 정답/오답 버튼 (라이트너 모드 전용) -->
+<div class="answer-btns" id="answerBtns">
+  <div class="answer-symbol-row">
+    <button class="wrong-btn" onclick="leitnerAnswer(false)" title="몰랐어요">✕</button>
+    <button class="leitner-tts-btn" onclick="speak()">🔊</button>
+    <button class="correct-btn" onclick="leitnerAnswer(true)" title="알았어요">✓</button>
+  </div>
+</div>
+
+<div class="tts-status" id="ttsStatus"></div>
+
+<!-- 듣기 모드 진입 버튼 (자유 학습 전용) -->
+<div class="listen-start-row" id="listenStartRow">
+  <button class="listen-start-btn" onclick="startListen('loop')">▶ 자동 듣기</button>
+</div>
+
+<div class="status-row">
+  <div>학습 <span class="val" id="learnedCount">0</span></div>
+  <div>남은 카드 <span class="val" id="remainCount">0</span></div>
+  <div>전체 <span class="val" id="totalCount">0</span></div>
+</div>
+
+<!-- 외부 링크 -->
+<div class="external-link-row">
+  <a class="study-link-btn" href="https://georgian-biliki.onrender.com/" target="_blank" rel="noopener">공부하기 →</a>
+  <a class="donate-btn" href="https://paypal.me/phs2728/5" target="_blank" rel="noopener">☕ 커피 값 지원</a>
+</div>
+
+<script>
+// ── 상태 ──────────────────────────────────────
+let currentChapter = 1;
+let allCards      = [];
+let filteredCards = [];
+let currentIndex  = 0;
+let isFlipped     = false;
+let voiceGender   = 'female';
+let learned       = new Set();
+let activeCategory = '전체';
+let audioCtx      = null;
+let currentSource = null;
+
+// ── API ───────────────────────────────────────
+async function apiChapters() {
+  const r = await fetch('/api/chapters');
+  return r.json();
+}
+
+async function apiChapter(num) {
+  const r = await fetch(`/api/chapter/${num}`);
+  if (!r.ok) throw new Error(`챕터 ${num} 없음`);
+  return r.json();
+}
+
+// ── 초기화 ────────────────────────────────────
+let chapterList = [];
+
+function toggleChapterMenu() {
+  const btn = document.getElementById('hamburgerBtn');
+  const dd = document.getElementById('chapterDropdown');
+  const open = dd.classList.toggle('open');
+  btn.classList.toggle('open', open);
+}
+
+function closeChapterMenu() {
+  document.getElementById('chapterDropdown').classList.remove('open');
+  document.getElementById('hamburgerBtn').classList.remove('open');
+}
+
+function shortTitle(title) {
+  return title.replace(/^챕터\s*\d+\s*[—\-–]\s*/, '');
+}
+
+function buildChapterDropdown() {
+  const dd = document.getElementById('chapterDropdown');
+  dd.innerHTML = '';
+  chapterList.forEach(ch => {
+    const el = document.createElement('div');
+    el.className = 'chapter-option' + (ch.num === currentChapter ? ' active' : '');
+    el.textContent = ch.title;
+    el.onclick = () => { switchChapter(ch.num); closeChapterMenu(); };
+    dd.appendChild(el);
+  });
+}
+
+async function init() {
+  chapterList = await apiChapters();
+  buildChapterDropdown();
+  await switchChapter(chapterList[0]?.num ?? 1);
+}
+
+async function switchChapter(num) {
+  if (listenActive) stopListen();
+  currentChapter = num;
+  const data = await apiChapter(num);
+  allCards = data.cards;
+  learned.clear();
+  activeCategory = '전체';
+
+  // 헤더 챕터명 업데이트
+  const ch = chapterList.find(c => c.num === num);
+  if (ch) document.getElementById('chapterName').textContent = shortTitle(ch.title);
+
+  // 드롭다운 active 상태 갱신
+  buildChapterDropdown();
+
+  buildCategoryFilters();
+  filterByCategory('전체');
+}
+
+// ── 카테고리 필터 ─────────────────────────────
+function buildCategoryFilters() {
+  const cats = ['전체', ...new Set(allCards.map(c => c.cat))];
+  const container = document.getElementById('catFilters');
+  container.innerHTML = '';
+  cats.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (cat === activeCategory ? ' active' : '');
+    btn.textContent = cat;
+    btn.onclick = () => filterByCategory(cat);
+    container.appendChild(btn);
+  });
+}
+
+function filterByCategory(cat) {
+  activeCategory = cat;
+  document.querySelectorAll('.cat-btn').forEach(b =>
+    b.classList.toggle('active', b.textContent === cat)
+  );
+  filteredCards = cat === '전체' ? [...allCards] : allCards.filter(c => c.cat === cat);
+  currentIndex = 0;
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  renderCard();
+}
+
+// ── 카드 렌더 ─────────────────────────────────
+function renderCard() {
+  if (!filteredCards.length) return;
+  const card  = filteredCards[currentIndex];
+  const total = filteredCards.length;
+
+  document.getElementById('frontGeo').textContent = card.geo;
+  document.getElementById('backCat').textContent  = card.cat;
+  document.getElementById('backKo').textContent   = card.ko;
+  document.getElementById('backGeo').textContent  = card.geo;
+
+  const pct = ((currentIndex + 1) / total * 100).toFixed(1);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${currentIndex + 1} / ${total}장`;
+  document.getElementById('totalCount').textContent   = total;
+  document.getElementById('learnedCount').textContent = learned.size;
+  document.getElementById('remainCount').textContent  = total - learned.size;
+}
+
+// ── 플립 ──────────────────────────────────────
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('card').classList.toggle('flipped', isFlipped);
+  if (isFlipped) {
+    learned.add(currentIndex);
+    document.getElementById('learnedCount').textContent = learned.size;
+    document.getElementById('remainCount').textContent  = filteredCards.length - learned.size;
+  }
+}
+
+// ── 네비게이션 ────────────────────────────────
+function nextCard() {
+  if (!filteredCards.length) return;
+  currentIndex = (currentIndex + 1) % filteredCards.length;
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  renderCard();
+}
+
+function prevCard() {
+  if (!filteredCards.length) return;
+  currentIndex = (currentIndex - 1 + filteredCards.length) % filteredCards.length;
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  renderCard();
+}
+
+// ── 섞기 / 리셋 ───────────────────────────────
+function shuffleCards() {
+  filteredCards = [...filteredCards].sort(() => Math.random() - 0.5);
+  currentIndex = 0;
+  learned.clear();
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  renderCard();
+}
+
+function resetDeck() {
+  filterByCategory(activeCategory);
+  learned.clear();
+  document.getElementById('learnedCount').textContent = 0;
+  document.getElementById('remainCount').textContent  = filteredCards.length;
+}
+
+// ── 음성 토글 ─────────────────────────────────
+function toggleVoice() {
+  voiceGender = voiceGender === 'female' ? 'male' : 'female';
+  const btn = document.getElementById('btnGender');
+  if (voiceGender === 'female') {
+    btn.textContent = '♀';
+    btn.className   = 'icon-btn female-active';
+    btn.title       = '여성 음성 — Eka';
+  } else {
+    btn.textContent = '♂';
+    btn.className   = 'icon-btn male-active';
+    btn.title       = '남성 음성 — Giorgi';
+  }
+}
+
+// ── TTS ───────────────────────────────────────
+async function speak() {
+  if (!filteredCards.length) return;
+
+  const raw  = filteredCards[currentIndex].geo;
+  const text = raw.replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '').replace(/-/g, '').trim();
+
+  const statusEl = document.getElementById('ttsStatus');
+  statusEl.textContent = '▶ 불러오는 중...';
+
+  if (currentSource) { try { currentSource.stop(); } catch(_) {} currentSource = null; }
+
+  try {
+    if (!audioCtx || audioCtx.state === 'closed')
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+    const resp = await fetch(`/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`);
+    if (!resp.ok) throw new Error(`서버 ${resp.status}`);
+
+    const buf  = await audioCtx.decodeAudioData(await resp.arrayBuffer());
+    const src  = audioCtx.createBufferSource();
+    src.buffer = buf;
+    src.playbackRate.value = voiceGender === 'female' ? 1.12 : 0.89;
+    src.connect(audioCtx.destination);
+    src.start(0);
+    currentSource = src;
+
+    const label = voiceGender === 'female' ? 'Eka ♀' : 'Giorgi ♂';
+    statusEl.textContent = label;
+    document.getElementById('ttsBtn').classList.add('playing');
+    src.onended = () => {
+      statusEl.textContent = '';
+      currentSource = null;
+      document.getElementById('ttsBtn').classList.remove('playing');
+    };
+  } catch (err) {
+    statusEl.textContent = `⚠ ${err.message}`;
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
+  }
+}
+
+// ── 라이트너 시스템 ───────────────────────────
+const LEITNER_KEY = 'georgian_leitner_v1';
+const BOX_INTERVALS = [0, 1, 2, 4, 7, 14]; // 박스별 복습 간격(일)
+let appMode = 'free';       // 'free' | 'leitner'
+let leitnerQueue = [];      // 오늘 복습할 카드 배열
+let leitnerIndex = 0;
+
+function todayStr() {
+  return new Date().toISOString().split('T')[0];
+}
+function addDays(str, n) {
+  const d = new Date(str);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().split('T')[0];
+}
+function cardId(chNum, card) {
+  return `${chNum}::${card.geo}`;
+}
+
+function getLeitnerData() {
+  try { return JSON.parse(localStorage.getItem(LEITNER_KEY) || '{}'); }
+  catch { return {}; }
+}
+function saveLeitnerData(data) {
+  localStorage.setItem(LEITNER_KEY, JSON.stringify(data));
+}
+
+// 카드 상태 조회 (없으면 박스1, 오늘 복습)
+function getCardState(id) {
+  const data = getLeitnerData();
+  return data[id] || { box: 1, nextReview: todayStr() };
+}
+
+// 박스별 카드 수 집계
+function leitnerStats() {
+  const data = getLeitnerData();
+  const today = todayStr();
+  const counts = [0, 0, 0, 0, 0, 0]; // index 1~5
+  let due = 0;
+
+  // 현재 챕터의 모든 카드 기준으로 집계
+  allCards.forEach((card, i) => {
+    const id = cardId(currentChapter, card);
+    const state = data[id] || { box: 1, nextReview: today };
+    counts[state.box]++;
+    if (state.nextReview <= today) due++;
+  });
+  return { counts, due };
+}
+
+function updateLeitnerUI() {
+  const { counts, due } = leitnerStats();
+  for (let b = 1; b <= 5; b++) {
+    document.getElementById(`lbc${b}`).textContent = counts[b];
+    document.getElementById(`lbox${b}`).classList.remove('current', 'done');
+    if (b === 5 && counts[b] > 0) document.getElementById(`lbox${b}`).classList.add('done');
+  }
+  document.getElementById('dueCount').textContent = due;
+
+  // 현재 카드의 박스 강조
+  if (appMode === 'leitner' && leitnerQueue.length > 0 && leitnerIndex < leitnerQueue.length) {
+    const cur = leitnerQueue[leitnerIndex];
+    const state = getCardState(cardId(currentChapter, cur));
+    document.getElementById(`lbox${state.box}`).classList.add('current');
+  }
+}
+
+// 오늘 복습할 카드 목록 만들기
+function buildLeitnerQueue() {
+  const data = getLeitnerData();
+  const today = todayStr();
+  leitnerQueue = allCards.filter(card => {
+    const id = cardId(currentChapter, card);
+    const state = data[id] || { box: 1, nextReview: today };
+    return state.nextReview <= today;
+  });
+  // 박스 낮은 순 → 랜덤
+  leitnerQueue.sort((a, b) => {
+    const sa = getCardState(cardId(currentChapter, a));
+    const sb = getCardState(cardId(currentChapter, b));
+    return sa.box - sb.box || Math.random() - 0.5;
+  });
+  leitnerIndex = 0;
+}
+
+function leitnerAnswer(correct) {
+  if (!leitnerQueue.length) return;
+  const card = leitnerQueue[leitnerIndex];
+  const id = cardId(currentChapter, card);
+  const data = getLeitnerData();
+  const cur = data[id] || { box: 1, nextReview: todayStr() };
+
+  let nextBox;
+  if (correct) {
+    nextBox = Math.min(cur.box + 1, 5);
+  } else {
+    nextBox = 1;
+  }
+  const nextReview = addDays(todayStr(), BOX_INTERVALS[nextBox]);
+  data[id] = { box: nextBox, nextReview };
+  saveLeitnerData(data);
+
+  leitnerIndex++;
+  showLeitnerCard();
+}
+
+function showLeitnerCard() {
+  const cardEl = document.getElementById('card');
+  const doneEl = document.getElementById('leitnerDone');
+  const sceneEl = document.querySelector('.card-scene');
+  const answerEl = document.getElementById('answerBtns');
+
+  // 뒤집기 초기화
+  isFlipped = false;
+  cardEl.classList.remove('flipped');
+  answerEl.classList.add('visible'); // 처음부터 버튼 표시
+
+  if (leitnerIndex >= leitnerQueue.length) {
+    // 오늘치 완료
+    sceneEl.style.display = 'none';
+    doneEl.style.display = 'flex';
+  } else {
+    sceneEl.style.display = '';
+    doneEl.style.display = 'none';
+    const card = leitnerQueue[leitnerIndex];
+    document.getElementById('frontGeo').textContent = card.geo;
+    document.getElementById('backCat').textContent  = card.cat;
+    document.getElementById('backKo').textContent   = card.ko;
+    document.getElementById('backGeo').textContent  = card.geo;
+
+    const total = leitnerQueue.length;
+    const pct   = (leitnerIndex / total * 100).toFixed(1);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent = `${leitnerIndex + 1} / ${total}장`;
+    document.getElementById('totalCount').textContent   = total;
+    document.getElementById('learnedCount').textContent = leitnerIndex;
+    document.getElementById('remainCount').textContent  = total - leitnerIndex;
+  }
+  updateLeitnerUI();
+}
+
+function setMode(mode) {
+  appMode = mode;
+  const isFree = mode === 'free';
+
+  if (listenActive) stopListen();
+
+  document.getElementById('modeFree').classList.toggle('active', isFree);
+  document.getElementById('modeLeitner').classList.toggle('active', !isFree);
+  document.getElementById('leitnerPanel').classList.toggle('visible', !isFree);
+  document.getElementById('catFilters').style.display = isFree ? '' : 'none';
+  document.getElementById('navButtons').classList.toggle('leitner-mode', !isFree);
+  document.getElementById('listenStartRow').style.display = isFree ? '' : 'none';
+  if (isFree) document.getElementById('answerBtns').classList.remove('visible');
+  document.getElementById('leitnerDone').style.display = 'none';
+  document.querySelector('.card-scene').style.display = '';
+
+  if (!isFree) {
+    buildLeitnerQueue();
+    showLeitnerCard();
+  } else {
+    filterByCategory(activeCategory);
+  }
+}
+
+
+function resetLeitner() {
+  if (!confirm('이 챕터의 라이트너 진행 상황을 초기화할까요?')) return;
+  const data = getLeitnerData();
+  allCards.forEach(card => { delete data[cardId(currentChapter, card)]; });
+  saveLeitnerData(data);
+  buildLeitnerQueue();
+  showLeitnerCard();
+}
+
+// ── 이벤트 ────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (appMode === 'leitner') {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+    else if (e.key === 'ArrowRight' || e.key === 'y') leitnerAnswer(true);
+    else if (e.key === 'ArrowLeft'  || e.key === 'n') leitnerAnswer(false);
+    else if (e.key === 's') speak();
+    return;
+  }
+  if      (e.key === 'ArrowRight') nextCard();
+  else if (e.key === 'ArrowLeft')  prevCard();
+  else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flipCard(); }
+  else if (e.key === 's') speak();
+});
+
+// 드롭다운 외부 클릭 시 닫기
+document.addEventListener('click', e => {
+  if (!e.target.closest('.header-left')) closeChapterMenu();
+});
+
+// ── 자동 듣기 모드 ──────────────────────────────────
+let listenGen    = 0;
+let listenActive = false;
+let listenPaused = false;
+let listenIdx    = 0;
+let listenMode   = 'loop'; // 'once' | 'loop' | 'random'
+let listenCards  = [];
+
+const listenAudio = new Audio();
+listenAudio.setAttribute('playsinline', '');
+
+// iOS 백그라운드 오디오 세션 유지용 (거의 무음)
+const kaAudio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+kaAudio.loop = true;
+kaAudio.volume = 0.001;
+
+function listenSleep(ms, gen) {
+  return new Promise(resolve => {
+    const end = Date.now() + ms;
+    const tick = () => {
+      if (listenGen !== gen) { resolve(); return; }
+      if (listenPaused)      { setTimeout(tick, 100); return; }
+      if (Date.now() >= end) { resolve(); return; }
+      setTimeout(tick, 50);
+    };
+    tick();
+  });
+}
+
+function listenPlay(url, gen) {
+  return new Promise(resolve => {
+    if (listenGen !== gen) { resolve(); return; }
+    listenAudio.pause();
+    listenAudio.src = url;
+    listenAudio.onended = () => resolve();
+    listenAudio.onerror = () => resolve();
+    listenAudio.play().catch(() => resolve());
+  });
+}
+
+async function listenLoop(gen) {
+  while (listenActive && listenGen === gen) {
+    // 일시정지 대기
+    while (listenPaused && listenGen === gen) {
+      await new Promise(r => setTimeout(r, 100));
+    }
+    if (listenGen !== gen) break;
+
+    const card = listenCards[listenIdx];
+    setListenPhase('조지아어');
+    updateListenUI(card);
+
+    // 1. 조지아어 TTS
+    const geoUrl = `/tts?text=${encodeURIComponent(card.geo)}&gender=${voiceGender}`;
+    await listenPlay(geoUrl, gen);
+    await listenSleep(listenGap, gen);
+    if (listenGen !== gen) break;
+
+    // 2. 한국어 TTS
+    setListenPhase('한국어');
+    const koRaw = card.ko.replace(/\s*\([^)]*\)/g, '').split(/[\/,]/)[0].trim();
+    const koUrl = `/tts?text=${encodeURIComponent(koRaw)}&lang=ko`;
+    await listenPlay(koUrl, gen);
+    await listenSleep(listenGap, gen);
+    if (listenGen !== gen) break;
+
+    listenIdx++;
+    if (listenIdx >= listenCards.length) {
+      if (listenMode === 'once') { stopListen(); return; }
+      listenIdx = 0;
+      if (listenMode === 'random') listenCards.sort(() => Math.random() - 0.5);
+    }
+  }
+}
+
+function updateListenUI(card) {
+  document.getElementById('listenWord').textContent     = card.geo;
+  document.getElementById('listenProgress').textContent = `${listenIdx + 1} / ${listenCards.length}`;
+}
+
+function setListenPhase(phase) {
+  document.getElementById('listenPhase').textContent = phase;
+}
+
+function updateListenPauseBtn() {
+  document.getElementById('listenPauseBtn').textContent = listenPaused ? '▶' : '⏸';
+}
+
+// 단어 사이 간격 (ms) — 슬라이더 0~4 → 500 / 1000 / 1500 / 2500 / 4000
+const GAP_STEPS = [250, 500, 1000, 1250, 1500];
+const GAP_LABELS = ['0.25초', '0.5초', '1초', '1.25초', '1.5초'];
+let listenGap = 1000; // 기본 1초
+
+function setListenSpeed(idx) {
+  idx = parseInt(idx);
+  listenGap = GAP_STEPS[idx];
+  document.getElementById('listenSpeedLabel').textContent = `간격 ${GAP_LABELS[idx]}`;
+  const pct = (idx / (GAP_STEPS.length - 1) * 100).toFixed(1);
+  document.getElementById('listenSpeedSlider').style.setProperty('--pct', pct + '%');
+}
+
+function setListenMode(mode) {
+  listenMode = mode;
+  ['once','loop','random'].forEach(m => {
+    document.getElementById('lm' + m.charAt(0).toUpperCase() + m.slice(1))
+      .classList.toggle('active', m === mode);
+  });
+}
+
+function startListen(mode = 'loop') {
+  if (listenActive) stopListen();
+  listenMode   = mode;
+  listenCards  = [...filteredCards];
+  if (mode === 'random') listenCards.sort(() => Math.random() - 0.5);
+  listenActive = true;
+  listenPaused = false;
+
+  // 사용자 제스처 중에 오디오 세션 활성화 (autoplay 정책 우회)
+  const firstCard = listenCards[0];
+  if (firstCard) {
+    listenAudio.src = `/tts?text=${encodeURIComponent(firstCard.geo)}&gender=${voiceGender}`;
+    listenAudio.play().catch(() => {});
+    listenAudio.pause();
+    listenAudio.currentTime = 0;
+  }
+  listenIdx    = 0;
+  listenGen++;
+  document.getElementById('listenOverlay').classList.add('active');
+  updateListenPauseBtn();
+
+  // iOS 백그라운드 세션 유지
+  kaAudio.play().catch(() => {});
+
+  // 잠금화면 미디어 컨트롤
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: filteredCards[listenIdx]?.geo ?? '조지아어 듣기',
+      artist: '조지아어 단어장',
+    });
+    navigator.mediaSession.setActionHandler('pause', () => { if (!listenPaused) toggleListenPause(); });
+    navigator.mediaSession.setActionHandler('play',  () => { if (listenPaused)  toggleListenPause(); });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      listenIdx = (listenIdx + 1) % filteredCards.length;
+      replayListen();
+    });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      listenIdx = (listenIdx - 1 + filteredCards.length) % filteredCards.length;
+      replayListen();
+    });
+  }
+
+  listenLoop(listenGen);
+}
+
+function stopListen() {
+  listenActive = false;
+  listenPaused = false;
+  listenGen++;
+  listenAudio.pause();
+  listenAudio.src = '';
+  kaAudio.pause();
+  document.getElementById('listenOverlay').classList.remove('active');
+}
+
+function toggleListenPause() {
+  listenPaused = !listenPaused;
+  if (listenPaused) {
+    listenAudio.pause();
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+  } else {
+    if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+  }
+  updateListenPauseBtn();
+}
+
+function replayListen() {
+  const gen = ++listenGen;
+  listenPaused = false;
+  listenAudio.pause();
+  listenAudio.src = '';
+  updateListenPauseBtn();
+  listenLoop(gen);
+}
+
+init();
+</script>
+
+<div style="margin-top:28px;font-size:0.7rem;color:#5a5f75;text-align:center;letter-spacing:0.3px;">
+  ← → 이전·다음 &nbsp;·&nbsp; Space 뒤집기 &nbsp;·&nbsp; S 발음
+</div>
+
+<!-- 듣기 모드 오버레이 -->
+<div class="listen-overlay" id="listenOverlay">
+  <div class="listen-progress" id="listenProgress">1 / 1</div>
+  <div class="listen-word" id="listenWord"></div>
+  <div class="listen-phase" id="listenPhase">조지아어</div>
+  <div class="listen-mode-row">
+    <button class="listen-mode-btn" id="lmOnce"   onclick="setListenMode('once')">한번만</button>
+    <button class="listen-mode-btn active" id="lmLoop" onclick="setListenMode('loop')">↻ 계속</button>
+    <button class="listen-mode-btn" id="lmRandom" onclick="setListenMode('random')">⇄ 랜덤</button>
+  </div>
+  <div class="listen-ctrl">
+    <button class="listen-btn" onclick="replayListen()" title="다시 듣기">↺</button>
+    <button class="listen-btn primary" id="listenPauseBtn" onclick="toggleListenPause()">⏸</button>
+    <button class="listen-btn stop" onclick="stopListen()" title="종료">✕</button>
+  </div>
+  <div class="listen-speed-wrap">
+    <div class="listen-speed-label" id="listenSpeedLabel">간격 1초</div>
+    <input class="listen-speed-slider" id="listenSpeedSlider" type="range"
+      min="0" max="4" step="1" value="2"
+      oninput="setListenSpeed(this.value)"
+      style="--pct:50%">
+
+  </div>
+</div>
+
+</body>
+</html>
