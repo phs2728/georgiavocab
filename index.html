@@ -853,7 +853,7 @@
   </div>
   <div class="icon-btns">
     <button class="icon-btn female-active" id="btnGender" onclick="toggleVoice()" title="여성 음성 (클릭하면 남성으로)">♀</button>
-    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="카드 방향 전환">가→ქ</button>
+    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="카드 방향 전환">가</button>
     <button class="icon-btn" onclick="shuffleCards()" title="카드 섞기">⇄</button>
     <button class="icon-btn" onclick="resetDeck()" title="처음부터">↩</button>
   </div>
@@ -1145,11 +1145,11 @@ function toggleFlipDir() {
   flipDir = flipDir === 'geo-ko' ? 'ko-geo' : 'geo-ko';
   const btn = document.getElementById('btnFlipDir');
   if (flipDir === 'geo-ko') {
-    btn.textContent = 'ქ→가';
-    btn.title = '조지아어 → 한국어';
+    btn.textContent = '가';
+    btn.title = '한국어 → 조지아어로 전환';
   } else {
-    btn.textContent = '가→ქ';
-    btn.title = '한국어 → 조지아어';
+    btn.textContent = 'ქ';
+    btn.title = '조지아어 → 한국어로 전환';
   }
   isFlipped = false;
   document.getElementById('card').classList.remove('flipped');
