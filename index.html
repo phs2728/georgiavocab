@@ -123,6 +123,8 @@
   .icon-btn:hover { background: #252839; color: #eee; border-color: #3a3d50; }
   .icon-btn.female-active { background: #2a1f3a; color: #c084f0; border-color: #7d3c98; font-size: 1.1rem; font-weight: 700; }
   .icon-btn.male-active   { background: #1a2a3a; color: #60a8f0; border-color: #1f6ab0; font-size: 1.1rem; font-weight: 700; }
+  .icon-btn.ko-active     { background: #1a2e1a; color: #5ec28b; border-color: #2e7d4f; font-weight: 700; }
+  #btnFlipDir             { width: auto; padding: 0 10px; font-size: 0.72rem; white-space: nowrap; }
 
   /* ── 카테고리 필터 ── */
   .cat-filter-wrap {
@@ -853,7 +855,7 @@
   </div>
   <div class="icon-btns">
     <button class="icon-btn female-active" id="btnGender" onclick="toggleVoice()" title="여성 음성 (클릭하면 남성으로)">♀</button>
-    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="카드 방향 전환">가</button>
+    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="한국어 → 조지아어로 전환">한국어</button>
     <button class="icon-btn" onclick="shuffleCards()" title="카드 섞기">⇄</button>
     <button class="icon-btn" onclick="resetDeck()" title="처음부터">↩</button>
   </div>
@@ -1145,10 +1147,12 @@ function toggleFlipDir() {
   flipDir = flipDir === 'geo-ko' ? 'ko-geo' : 'geo-ko';
   const btn = document.getElementById('btnFlipDir');
   if (flipDir === 'geo-ko') {
-    btn.textContent = '가';
+    btn.textContent = '한국어';
+    btn.className = 'icon-btn';
     btn.title = '한국어 → 조지아어로 전환';
   } else {
-    btn.textContent = 'ქ';
+    btn.textContent = '한국어';
+    btn.className = 'icon-btn ko-active';
     btn.title = '조지아어 → 한국어로 전환';
   }
   isFlipped = false;
