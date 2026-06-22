@@ -1,4 +1,4 @@
-const CACHE = 'georgiavocab-v1';
+const CACHE = 'georgiavocab-v2';
 const STATIC = [
   '/',
   '/index.html',
