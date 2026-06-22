@@ -273,7 +273,7 @@
     margin-bottom: 10px;
   }
 
-  .card-geo-small {
+  .card-geo-small, .card-ko-small {
     font-size: 1rem;
     color: #7a7f9a;
     text-align: center;
@@ -853,6 +853,7 @@
   </div>
   <div class="icon-btns">
     <button class="icon-btn female-active" id="btnGender" onclick="toggleVoice()" title="여성 음성 (클릭하면 남성으로)">♀</button>
+    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="카드 방향 전환">가→ქ</button>
     <button class="icon-btn" onclick="shuffleCards()" title="카드 섞기">⇄</button>
     <button class="icon-btn" onclick="resetDeck()" title="처음부터">↩</button>
   </div>
@@ -894,13 +895,13 @@
 <div class="card-scene" onclick="flipCard()">
   <div class="card" id="card">
     <div class="card-face card-front">
-      <div class="card-geo" id="frontGeo"></div>
-      <div class="card-hint">탭하면 뜻이 보여요</div>
+      <div class="card-geo" id="frontMain"></div>
+      <div class="card-hint" id="cardHint">탭하면 뜻이 보여요</div>
     </div>
     <div class="card-face card-back">
       <div class="card-category" id="backCat"></div>
-      <div class="card-ko" id="backKo"></div>
-      <div class="card-geo-small" id="backGeo"></div>
+      <div class="card-ko" id="backSub"></div>
+      <div class="card-geo-small" id="backSmall"></div>
     </div>
   </div>
 </div>
@@ -956,6 +957,7 @@ let filteredCards = [];
 let currentIndex  = 0;
 let isFlipped     = false;
 let voiceGender   = 'female';
+let flipDir       = 'geo-ko'; // 'geo-ko' | 'ko-geo'
 let learned       = new Set();
 let activeCategory = '전체';
 let audioCtx      = null;
@@ -1061,10 +1063,15 @@ function renderCard() {
   const card  = filteredCards[currentIndex];
   const total = filteredCards.length;
 
-  document.getElementById('frontGeo').textContent = card.geo;
-  document.getElementById('backCat').textContent  = card.cat;
-  document.getElementById('backKo').textContent   = card.ko;
-  document.getElementById('backGeo').textContent  = card.geo;
+  const geoFirst = flipDir === 'geo-ko';
+  document.getElementById('frontMain').textContent = geoFirst ? card.geo : card.ko;
+  document.getElementById('frontMain').className   = geoFirst ? 'card-geo' : 'card-ko';
+  document.getElementById('cardHint').textContent  = geoFirst ? '탭하면 뜻이 보여요' : '탭하면 조지아어가 보여요';
+  document.getElementById('backCat').textContent   = card.cat;
+  document.getElementById('backSub').textContent   = geoFirst ? card.ko : card.geo;
+  document.getElementById('backSub').className     = geoFirst ? 'card-ko' : 'card-geo';
+  document.getElementById('backSmall').textContent = geoFirst ? card.geo : card.ko;
+  document.getElementById('backSmall').className   = geoFirst ? 'card-geo-small' : 'card-ko-small';
 
   const pct = ((currentIndex + 1) / total * 100).toFixed(1);
   document.getElementById('progressFill').style.width = pct + '%';
@@ -1132,6 +1139,21 @@ function toggleVoice() {
     btn.className   = 'icon-btn male-active';
     btn.title       = '남성 음성 — Giorgi';
   }
+}
+
+function toggleFlipDir() {
+  flipDir = flipDir === 'geo-ko' ? 'ko-geo' : 'geo-ko';
+  const btn = document.getElementById('btnFlipDir');
+  if (flipDir === 'geo-ko') {
+    btn.textContent = 'ქ→가';
+    btn.title = '조지아어 → 한국어';
+  } else {
+    btn.textContent = '가→ქ';
+    btn.title = '한국어 → 조지아어';
+  }
+  isFlipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  renderCard();
 }
 
 // ── TTS ───────────────────────────────────────
@@ -1301,10 +1323,15 @@ function showLeitnerCard() {
     sceneEl.style.display = '';
     doneEl.style.display = 'none';
     const card = leitnerQueue[leitnerIndex];
-    document.getElementById('frontGeo').textContent = card.geo;
-    document.getElementById('backCat').textContent  = card.cat;
-    document.getElementById('backKo').textContent   = card.ko;
-    document.getElementById('backGeo').textContent  = card.geo;
+    const geoFirst2 = flipDir === 'geo-ko';
+    document.getElementById('frontMain').textContent = geoFirst2 ? card.geo : card.ko;
+    document.getElementById('frontMain').className   = geoFirst2 ? 'card-geo' : 'card-ko';
+    document.getElementById('cardHint').textContent  = geoFirst2 ? '탭하면 뜻이 보여요' : '탭하면 조지아어가 보여요';
+    document.getElementById('backCat').textContent   = card.cat;
+    document.getElementById('backSub').textContent   = geoFirst2 ? card.ko : card.geo;
+    document.getElementById('backSub').className     = geoFirst2 ? 'card-ko' : 'card-geo';
+    document.getElementById('backSmall').textContent = geoFirst2 ? card.geo : card.ko;
+    document.getElementById('backSmall').className   = geoFirst2 ? 'card-geo-small' : 'card-ko-small';
 
     const total = leitnerQueue.length;
     const pct   = (leitnerIndex / total * 100).toFixed(1);
