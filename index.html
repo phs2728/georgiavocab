@@ -943,6 +943,7 @@
 </div>
 
 <script>
+const API = 'https://georgiavocab.onrender.com';
 // ── 상태 ──────────────────────────────────────
 let currentChapter = 1;
 let allCards      = [];
@@ -957,12 +958,12 @@ let currentSource = null;
 
 // ── API ───────────────────────────────────────
 async function apiChapters() {
-  const r = await fetch('/api/chapters');
+  const r = await fetch(`${API}/api/chapters`);
   return r.json();
 }
 
 async function apiChapter(num) {
-  const r = await fetch(`/api/chapter/${num}`);
+  const r = await fetch(`${API}/api/chapter/${num}`);
   if (!r.ok) throw new Error(`챕터 ${num} 없음`);
   return r.json();
 }
@@ -1145,7 +1146,7 @@ async function speak() {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-    const resp = await fetch(`/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`);
+    const resp = await fetch(`${API}/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`);
     if (!resp.ok) throw new Error(`서버 ${resp.status}`);
 
     const buf  = await audioCtx.decodeAudioData(await resp.arrayBuffer());
@@ -1418,7 +1419,7 @@ async function listenLoop(gen) {
     updateListenUI(card);
 
     // 1. 조지아어 TTS
-    const geoUrl = `/tts?text=${encodeURIComponent(card.geo)}&gender=${voiceGender}`;
+    const geoUrl = `${API}/tts?text=${encodeURIComponent(card.geo)}&gender=${voiceGender}`;
     await listenPlay(geoUrl, gen);
     await listenSleep(listenGap, gen);
     if (listenGen !== gen) break;
@@ -1426,7 +1427,7 @@ async function listenLoop(gen) {
     // 2. 한국어 TTS
     setListenPhase('한국어');
     const koRaw = card.ko.replace(/\s*\([^)]*\)/g, '').split(/[\/,]/)[0].trim();
-    const koUrl = `/tts?text=${encodeURIComponent(koRaw)}&lang=ko`;
+    const koUrl = `${API}/tts?text=${encodeURIComponent(koRaw)}&lang=ko`;
     await listenPlay(koUrl, gen);
     await listenSleep(listenGap, gen);
     if (listenGen !== gen) break;
@@ -1485,7 +1486,7 @@ function startListen(mode = 'loop') {
   // 사용자 제스처 중에 오디오 세션 활성화 (autoplay 정책 우회)
   const firstCard = listenCards[0];
   if (firstCard) {
-    listenAudio.src = `/tts?text=${encodeURIComponent(firstCard.geo)}&gender=${voiceGender}`;
+    listenAudio.src = `${API}/tts?text=${encodeURIComponent(firstCard.geo)}&gender=${voiceGender}`;
     listenAudio.play().catch(() => {});
     listenAudio.pause();
     listenAudio.currentTime = 0;
