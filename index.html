@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="단어장">
 <meta name="theme-color" content="#0d1117">
 <title>조지아어 단어장</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -124,7 +125,7 @@
   .icon-btn.female-active { background: #2a1f3a; color: #c084f0; border-color: #7d3c98; font-size: 1.1rem; font-weight: 700; }
   .icon-btn.male-active   { background: #1a2a3a; color: #60a8f0; border-color: #1f6ab0; font-size: 1.1rem; font-weight: 700; }
   .icon-btn.ko-active     { background: #1a2e1a; color: #5ec28b; border-color: #2e7d4f; font-weight: 700; }
-  #btnFlipDir             { width: auto; padding: 0 10px; font-size: 0.72rem; white-space: nowrap; }
+  #btnFlipDir             { font-size: 1rem; font-family: 'Noto Sans Georgian', sans-serif; }
 
   /* ── 카테고리 필터 ── */
   .cat-filter-wrap {
@@ -855,7 +856,7 @@
   </div>
   <div class="icon-btns">
     <button class="icon-btn female-active" id="btnGender" onclick="toggleVoice()" title="여성 음성 (클릭하면 남성으로)">♀</button>
-    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="한국어로 전환">조지아어</button>
+    <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="한국어로 전환">ქ</button>
     <button class="icon-btn" onclick="shuffleCards()" title="카드 섞기">⇄</button>
     <button class="icon-btn" onclick="resetDeck()" title="처음부터">↩</button>
   </div>
@@ -1147,11 +1148,11 @@ function toggleFlipDir() {
   flipDir = flipDir === 'geo-ko' ? 'ko-geo' : 'geo-ko';
   const btn = document.getElementById('btnFlipDir');
   if (flipDir === 'geo-ko') {
-    btn.textContent = '조지아어';
+    btn.textContent = 'ქ';
     btn.className = 'icon-btn';
     btn.title = '한국어로 전환';
   } else {
-    btn.textContent = '한국어';
+    btn.textContent = '가';
     btn.className = 'icon-btn ko-active';
     btn.title = '조지아어로 전환';
   }
