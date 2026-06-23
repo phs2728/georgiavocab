@@ -1259,9 +1259,6 @@ function speak() {
   speakAudio.src = `${API}/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`;
 
   const btn = document.getElementById('ttsBtn') || document.querySelector('.leitner-tts-btn');
-  speakAudio.oncanplay = () => {
-    speakAudio.play().catch(() => {});
-  };
   speakAudio.onplay = () => {
     const label = voiceGender === 'female' ? 'Eka ♀' : 'Giorgi ♂';
     statusEl.textContent = label;
@@ -1275,6 +1272,8 @@ function speak() {
     statusEl.textContent = '⚠ 재생 오류';
     setTimeout(() => { statusEl.textContent = ''; }, 3000);
   };
+  // iOS: play()를 유저 제스처 컨텍스트 안에서 즉시 호출해야 함
+  speakAudio.play().catch(() => {});
 }
 
 // ── 라이트너 시스템 ───────────────────────────
