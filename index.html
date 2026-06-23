@@ -1241,19 +1241,8 @@ function toggleFlipDir() {
 }
 
 // ── TTS ───────────────────────────────────────
-const speakAudio = new Audio();
-speakAudio.setAttribute('playsinline', '');
-speakAudio.volume = 1;
-
-// iOS: 첫 터치 시 speakAudio를 무음으로 unlock해야 이후 play()가 허용됨
-let speakUnlocked = false;
-document.addEventListener('touchstart', function unlockSpeak() {
-  if (speakUnlocked) return;
-  speakUnlocked = true;
-  speakAudio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
-  speakAudio.play().then(() => { speakAudio.pause(); speakAudio.src = ''; }).catch(() => {});
-  document.removeEventListener('touchstart', unlockSpeak);
-}, { once: true });
+// iOS TTS용 오디오 (자동듣기와 공유 — listenAudio는 아래 정의되나 런타임에 참조)
+// speak()는 listenAudio를 사용해 iOS unlock 상태를 공유함
 
 function speak() {
   const cards = appMode === 'leitner' ? leitnerQueue : filteredCards;
@@ -1266,25 +1255,41 @@ function speak() {
   const statusEl = document.getElementById('ttsStatus');
   statusEl.textContent = '▶ 불러오는 중...';
 
-  speakAudio.pause();
-  speakAudio.src = `${API}/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`;
+  // 자동듣기 중이면 중단 후 발음 재생
+  const wasListening = listenActive;
+  if (listenActive) {
+    listenActive = false;
+    listenGen++;
+    listenAudio.pause();
+  }
+
+  listenAudio.onplay = null;
+  listenAudio.onended = null;
+  listenAudio.onerror = null;
+
+  listenAudio.src = `${API}/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`;
 
   const btn = document.getElementById('ttsBtn') || document.querySelector('.leitner-tts-btn');
-  speakAudio.onplay = () => {
+  listenAudio.onplay = () => {
     const label = voiceGender === 'female' ? 'Eka ♀' : 'Giorgi ♂';
     statusEl.textContent = label;
     if (btn) btn.classList.add('playing');
   };
-  speakAudio.onended = () => {
+  listenAudio.onended = () => {
     statusEl.textContent = '';
     if (btn) btn.classList.remove('playing');
+    listenAudio.onplay = null;
+    listenAudio.onended = null;
+    listenAudio.onerror = null;
   };
-  speakAudio.onerror = () => {
+  listenAudio.onerror = () => {
     statusEl.textContent = '⚠ 재생 오류';
     setTimeout(() => { statusEl.textContent = ''; }, 3000);
+    listenAudio.onplay = null;
+    listenAudio.onended = null;
+    listenAudio.onerror = null;
   };
-  // iOS: play()를 유저 제스처 컨텍스트 안에서 즉시 호출해야 함
-  speakAudio.play().catch(() => {});
+  listenAudio.play().catch(() => {});
 }
 
 // ── 라이트너 시스템 ───────────────────────────
@@ -1498,6 +1503,12 @@ let listenCards  = [];
 
 const listenAudio = new Audio();
 listenAudio.setAttribute('playsinline', '');
+
+// iOS: 첫 터치 시 listenAudio를 무음으로 unlock → speak()와 자동듣기 모두 허용됨
+document.addEventListener('touchstart', function() {
+  listenAudio.play().catch(() => {});
+  listenAudio.pause();
+}, { once: true });
 
 // iOS 백그라운드 오디오 세션 유지용 (거의 무음)
 const kaAudio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
