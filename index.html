@@ -125,6 +125,7 @@
   .icon-btn.female-active { background: #2a1f3a; color: #c084f0; border-color: #7d3c98; font-size: 1.1rem; font-weight: 700; }
   .icon-btn.male-active   { background: #1a2a3a; color: #60a8f0; border-color: #1f6ab0; font-size: 1.1rem; font-weight: 700; }
   .icon-btn.ko-active     { background: #1a2e1a; color: #5ec28b; border-color: #2e7d4f; font-weight: 700; }
+  .icon-btn.shuffle-active { background: #2a2200; color: #f0c040; border-color: #a07800; font-weight: 700; }
   #btnFlipDir             { font-size: 1rem; font-family: 'Noto Sans Georgian', sans-serif; }
 
   /* ── 카테고리 필터 ── */
@@ -857,7 +858,7 @@
   <div class="icon-btns">
     <button class="icon-btn female-active" id="btnGender" onclick="toggleVoice()" title="여성 음성 (클릭하면 남성으로)">♀</button>
     <button class="icon-btn" id="btnFlipDir" onclick="toggleFlipDir()" title="한국어로 전환">ქ</button>
-    <button class="icon-btn" onclick="shuffleCards()" title="카드 섞기">⇄</button>
+    <button class="icon-btn" id="btnShuffle" onclick="toggleShuffle()" title="랜덤 모드">⇄</button>
     <button class="icon-btn" onclick="resetDeck()" title="처음부터">↩</button>
   </div>
 </div>
@@ -1098,7 +1099,7 @@ function flipCard() {
 // ── 네비게이션 ────────────────────────────────
 function nextCard() {
   if (!filteredCards.length) return;
-  currentIndex = (currentIndex + 1) % filteredCards.length;
+  currentIndex = randomMode ? randomIndex() : (currentIndex + 1) % filteredCards.length;
   isFlipped = false;
   document.getElementById('card').classList.remove('flipped');
   renderCard();
@@ -1106,20 +1107,33 @@ function nextCard() {
 
 function prevCard() {
   if (!filteredCards.length) return;
-  currentIndex = (currentIndex - 1 + filteredCards.length) % filteredCards.length;
+  currentIndex = randomMode ? randomIndex() : (currentIndex - 1 + filteredCards.length) % filteredCards.length;
   isFlipped = false;
   document.getElementById('card').classList.remove('flipped');
   renderCard();
 }
 
-// ── 섞기 / 리셋 ───────────────────────────────
-function shuffleCards() {
-  filteredCards = [...filteredCards].sort(() => Math.random() - 0.5);
-  currentIndex = 0;
-  learned.clear();
-  isFlipped = false;
-  document.getElementById('card').classList.remove('flipped');
-  renderCard();
+// ── 랜덤 모드 토글 ────────────────────────────
+let randomMode = false;
+
+function toggleShuffle() {
+  randomMode = !randomMode;
+  const btn = document.getElementById('btnShuffle');
+  if (randomMode) {
+    btn.className = 'icon-btn shuffle-active';
+    btn.title = '랜덤 모드 켜짐';
+  } else {
+    btn.className = 'icon-btn';
+    btn.title = '랜덤 모드';
+  }
+}
+
+function randomIndex() {
+  if (filteredCards.length <= 1) return 0;
+  let next;
+  do { next = Math.floor(Math.random() * filteredCards.length); }
+  while (next === currentIndex);
+  return next;
 }
 
 function resetDeck() {
