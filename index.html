@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="단어장">
 <meta name="theme-color" content="#0d1117">
 <title>조지아어 단어장</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;700&family=Noto+Serif+Georgian:wght@400;700&family=Secular+One&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -584,6 +584,32 @@
   .leitner-done .done-icon { font-size: 2.5rem; }
   .leitner-done .done-msg { color: #c0c4d8; font-weight: 600; }
 
+  /* ── 폰트 선택 ── */
+  .font-select-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+    width: 100%;
+    max-width: 480px;
+  }
+  .font-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #2a2d3a;
+    background: #1c1f2b;
+    color: #7a7f9a;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .font-btn--active {
+    background: #1e2a1e;
+    color: #5ec28b;
+    border-color: #2e7d4f;
+    font-weight: 600;
+  }
+
   /* ── 듣기 모드 진입 버튼 ── */
   .listen-start-row {
     display: flex;
@@ -936,6 +962,13 @@
 <div class="tts-status" id="ttsStatus"></div>
 
 <!-- 듣기 모드 진입 버튼 (자유 학습 전용) -->
+<!-- 폰트 선택 -->
+<div class="font-select-row" id="fontSelectRow">
+  <button class="font-btn font-btn--active" id="fontBtn0" onclick="setCardFont(0)">ა Sans</button>
+  <button class="font-btn" id="fontBtn1" onclick="setCardFont(1)">ა Serif</button>
+  <button class="font-btn" id="fontBtn2" onclick="setCardFont(2)">ა Bold</button>
+</div>
+
 <div class="listen-start-row" id="listenStartRow">
   <button class="listen-start-btn" onclick="startListen('loop')">▶ 자동 듣기</button>
 </div>
@@ -1083,6 +1116,10 @@ function renderCard() {
   document.getElementById('totalCount').textContent   = total;
   document.getElementById('learnedCount').textContent = learned.size;
   document.getElementById('remainCount').textContent  = total - learned.size;
+  // 선택된 폰트 유지
+  const fm = document.getElementById('frontMain');
+  fm.style.fontFamily = CARD_FONTS[currentFont];
+  fm.style.fontWeight = FONT_WEIGHTS[currentFont];
 }
 
 // ── 플립 ──────────────────────────────────────
@@ -1115,6 +1152,25 @@ function prevCard() {
 
 // ── 랜덤 모드 토글 ────────────────────────────
 let randomMode = false;
+
+// ── 폰트 선택 ──────────────────────────────────
+const CARD_FONTS = [
+  "'Noto Sans Georgian', sans-serif",
+  "'Noto Serif Georgian', serif",
+  "'Noto Sans Georgian', sans-serif",
+];
+const FONT_WEIGHTS = ['400', '400', '700'];
+let currentFont = 0;
+
+function setCardFont(idx) {
+  currentFont = idx;
+  const geo = document.getElementById('frontMain');
+  const style = `font-family: ${CARD_FONTS[idx]}; font-weight: ${FONT_WEIGHTS[idx]};`;
+  geo.style.cssText = (geo.style.cssText || '').replace(/font-family:[^;]*;?|font-weight:[^;]*;?/g, '') + style;
+  document.querySelectorAll('.font-btn').forEach((b, i) => {
+    b.className = i === idx ? 'font-btn font-btn--active' : 'font-btn';
+  });
+}
 
 function toggleShuffle() {
   randomMode = !randomMode;
@@ -1375,6 +1431,7 @@ function setMode(mode) {
   document.getElementById('catFilters').style.display = isFree ? '' : 'none';
   document.getElementById('navButtons').classList.toggle('leitner-mode', !isFree);
   document.getElementById('listenStartRow').style.display = isFree ? '' : 'none';
+  document.getElementById('fontSelectRow').style.display  = isFree ? '' : 'none';
   if (isFree) document.getElementById('answerBtns').classList.remove('visible');
   document.getElementById('leitnerDone').style.display = 'none';
   document.querySelector('.card-scene').style.display = '';
