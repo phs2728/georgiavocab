@@ -1255,6 +1255,11 @@ function speak() {
   const statusEl = document.getElementById('ttsStatus');
   statusEl.textContent = '▶ 불러오는 중...';
 
+  // iOS: 이 클릭이 첫 동작이면, 뒤따르는 document unlock 핸들러가 무음 wav로
+  //      덮어쓰지 못하게 미리 플래그를 세움 (재생 죽는 race 방지)
+  audioUnlocked = true;
+  kaAudio.play().catch(() => {});  // iOS 오디오 세션 활성
+
   // 자동듣기 중이면 중단 후 발음 재생
   const wasListening = listenActive;
   if (listenActive) {
@@ -1504,16 +1509,28 @@ let listenCards  = [];
 const listenAudio = new Audio();
 listenAudio.setAttribute('playsinline', '');
 
-// iOS: 첫 터치 시 listenAudio를 무음으로 unlock → speak()와 자동듣기 모두 허용됨
-document.addEventListener('touchstart', function() {
-  listenAudio.play().catch(() => {});
-  listenAudio.pause();
-}, { once: true });
-
 // iOS 백그라운드 오디오 세션 유지용 (거의 무음)
-const kaAudio = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+const kaAudio = new Audio(SILENT_WAV);
 kaAudio.loop = true;
 kaAudio.volume = 0.001;
+
+// iOS: 첫 사용자 동작 시 실제 무음 오디오를 재생해 listenAudio를 unlock해야
+//      이후 speak()/자동듣기의 play()가 허용됨. (src 없는 play()는 unlock 안 됨)
+let audioUnlocked = false;
+function unlockAudio() {
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  listenAudio.src = SILENT_WAV;
+  const p = listenAudio.play();
+  if (p && p.then) {
+    p.then(() => { listenAudio.pause(); listenAudio.currentTime = 0; }).catch(() => {});
+  }
+  kaAudio.play().catch(() => {});  // iOS 오디오 세션 활성 유지
+}
+['touchstart', 'touchend', 'click'].forEach(ev =>
+  document.addEventListener(ev, unlockAudio, { once: true, passive: true })
+);
 
 function listenSleep(ms, gen) {
   return new Promise(resolve => {
