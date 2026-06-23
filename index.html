@@ -1001,8 +1001,6 @@ let voiceGender   = 'female';
 let flipDir       = 'geo-ko'; // 'geo-ko' | 'ko-geo'
 let learned       = new Set();
 let activeCategory = '전체';
-let audioCtx      = null;
-let currentSource = null;
 
 // ── API ───────────────────────────────────────
 async function apiChapters() {
@@ -1243,45 +1241,40 @@ function toggleFlipDir() {
 }
 
 // ── TTS ───────────────────────────────────────
-async function speak() {
-  if (!filteredCards.length) return;
+const speakAudio = new Audio();
+speakAudio.setAttribute('playsinline', '');
 
-  const raw  = filteredCards[currentIndex].geo;
+function speak() {
+  const cards = appMode === 'leitner' ? leitnerQueue : filteredCards;
+  const idx   = appMode === 'leitner' ? leitnerIndex : currentIndex;
+  if (!cards.length) return;
+
+  const raw  = cards[idx].geo;
   const text = raw.replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '').replace(/-/g, '').trim();
 
   const statusEl = document.getElementById('ttsStatus');
   statusEl.textContent = '▶ 불러오는 중...';
 
-  if (currentSource) { try { currentSource.stop(); } catch(_) {} currentSource = null; }
+  speakAudio.pause();
+  speakAudio.src = `${API}/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`;
 
-  try {
-    if (!audioCtx || audioCtx.state === 'closed')
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') await audioCtx.resume();
-
-    const resp = await fetch(`${API}/tts?text=${encodeURIComponent(text)}&gender=${voiceGender}`);
-    if (!resp.ok) throw new Error(`서버 ${resp.status}`);
-
-    const buf  = await audioCtx.decodeAudioData(await resp.arrayBuffer());
-    const src  = audioCtx.createBufferSource();
-    src.buffer = buf;
-    src.playbackRate.value = voiceGender === 'female' ? 1.12 : 0.89;
-    src.connect(audioCtx.destination);
-    src.start(0);
-    currentSource = src;
-
+  const btn = document.getElementById('ttsBtn') || document.querySelector('.leitner-tts-btn');
+  speakAudio.oncanplay = () => {
+    speakAudio.play().catch(() => {});
+  };
+  speakAudio.onplay = () => {
     const label = voiceGender === 'female' ? 'Eka ♀' : 'Giorgi ♂';
     statusEl.textContent = label;
-    document.getElementById('ttsBtn').classList.add('playing');
-    src.onended = () => {
-      statusEl.textContent = '';
-      currentSource = null;
-      document.getElementById('ttsBtn').classList.remove('playing');
-    };
-  } catch (err) {
-    statusEl.textContent = `⚠ ${err.message}`;
+    if (btn) btn.classList.add('playing');
+  };
+  speakAudio.onended = () => {
+    statusEl.textContent = '';
+    if (btn) btn.classList.remove('playing');
+  };
+  speakAudio.onerror = () => {
+    statusEl.textContent = '⚠ 재생 오류';
     setTimeout(() => { statusEl.textContent = ''; }, 3000);
-  }
+  };
 }
 
 // ── 라이트너 시스템 ───────────────────────────
