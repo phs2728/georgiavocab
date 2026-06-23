@@ -1243,6 +1243,17 @@ function toggleFlipDir() {
 // ── TTS ───────────────────────────────────────
 const speakAudio = new Audio();
 speakAudio.setAttribute('playsinline', '');
+speakAudio.volume = 1;
+
+// iOS: 첫 터치 시 speakAudio를 무음으로 unlock해야 이후 play()가 허용됨
+let speakUnlocked = false;
+document.addEventListener('touchstart', function unlockSpeak() {
+  if (speakUnlocked) return;
+  speakUnlocked = true;
+  speakAudio.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+  speakAudio.play().then(() => { speakAudio.pause(); speakAudio.src = ''; }).catch(() => {});
+  document.removeEventListener('touchstart', unlockSpeak);
+}, { once: true });
 
 function speak() {
   const cards = appMode === 'leitner' ? leitnerQueue : filteredCards;
